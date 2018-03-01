@@ -1,0 +1,12 @@
+{
+  "name": "scrape-bank",
+  "version": "0.0.1",
+  "description": "Scrape banks",
+  "main": "server.js",
+  "author": "vical",
+  "dependencies": {
+    "casperjs": "^1.1.4",
+    "express": "latest",
+    "request": "latest"
+  }
+}
