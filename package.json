@@ -4,12 +4,16 @@
   "description": "Scrape banks",
   "main": "server.js",
   "author": "vical",
+  "scripts": {
+    "postinstall": "cd .. && npm install phantomjs -g"
+  },
   "dependencies": {
     "casperjs": "^1.1.4",
     "express": "latest",
     "firebase": "^4.10.1",
     "firebase-admin": "^5.9.1",
     "minimist-options": "^3.0.2",
+    "node-horseman": "^3.3.0",
     "request": "latest"
   }
 }
