@@ -1,41 +1,99 @@
 'use strict';
-const Horseman = require('node-horseman');
 const argv = require('minimist')(process.argv.slice(2));
+const authenticate = require("../models/authenticate");
+const Horseman = require('node-horseman');
 
-const firebase = require("firebase-admin");
-const serviceAccount = require("./accountbank-4f2d7-firebase-adminsdk.json");
+const firebase = authenticate.firebase_authenticate();
+const database = firebase.database();
 
-var config = {
-    credential: firebase.credential.cert(serviceAccount),
-    databaseURL: "https://accountbank-4f2d7.firebaseio.com"
-  };
-firebase.initializeApp(config);
+const users = database.ref('users');
 
-const horseman = new Horseman();
-const urlSearch = 'http://www.pricingcompass.com/login.do';
-horseman.open(urlSearch)
-        .type('input[name="username"]', 'vrodriguez')
-        .type('input[name="password"]', 'vrodriguez123')
-        .click('button[id="boton_entrar"]')
-        .wait(4000)
-        .text('#resumen-stock')
-        .then((text) => {
-          var dataPersist = { name: argv.user, age: parseInt(text) };
-          var refExample = firebase.database().ref("example");
-          var newNode = refExample.child("newnode");
-          newNode.set(dataPersist);
-        })
-        .close();
+let user = users.orderByChild('user').equalTo(argv.user).on('child_added', function(snapshot) {
 
-/*const users = ['Viicall'];
-users.forEach((user) => {
-    const horseman = new Horseman();
-    horseman
-        .open(`http://twitter.com/${user}`)
-        .text('.ProfileNav-item--followers .ProfileNav-value')
-        .then((text) => {
-            console.log(`${user}: ${text}`);
-        })
-        .close();
-});*/
+  let user = snapshot.val();
+  const banks = user.banks;
+  const templateBanks = database.ref('banks');
+
+  banks.forEach(function(bank) {
+
+    let doc = bank.credentials.document;
+    let password = bank.credentials.password;
+    const templateBank = templateBanks.orderByChild('code').equalTo(bank.code);
+
+
+    let adressInformation = 'users/' + snapshot.key + '/banks/' + bank.position + '/detail';
+
+    templateBank.on('child_added', function(snapshot) {
+
+      const template = snapshot.val();
+      const urlSearch = template.url;
+      const urlSearchAfter = template.urlAfter;
+      const formLogin = template.formLogin;
+      const documentField = formLogin.document.fieldId;
+      const passwordField = formLogin.password.fieldId;
+      const accessField = formLogin.access.fieldId;
+
+      const horseman = new Horseman();
+      horseman.on('resourceError', function(err) {
+        //console.log(err);
+      });
+      let templateSearch = horseman.open(urlSearch);
+      let page = templateSearch
+        .type(`input[id="${documentField}"]`, doc.toString())
+        .type(`input[id="${passwordField}"]`, password.toString())
+        .click(`button[id="${accessField}"]`)
+        .wait(2000);
+
+      const formInformation = template.formInformation;
+
+      if(urlSearchAfter){
+        let pageInformation = page
+          .open(urlSearchAfter)
+          .wait(1000);
+
+        for (let count = 0; count < formInformation.length; count++) {
+          let information = formInformation[count];
+          pageInformation
+            .html(information.type)
+            .then(text => {
+              var example = database.ref(adressInformation + '/amount/' + count + '/type');
+              example.set(text.trim());
+            })
+            .html(information.number)
+            .then(text => {
+              var example = database.ref(adressInformation + '/amount/' + count + '/number');
+              example.set(text.trim());
+            })
+            .html(information.amount)
+            .then(text => {
+              var example = database.ref(adressInformation + '/amount/' + count + '/amount');
+              example.set(text.trim());
+            })//DEBIT, LINE AND CREDIT
+            .html(information.authorized)
+            .then(text => {
+              if(information.typeAccount != 'DEBIT') {
+                var example = database.ref(adressInformation + '/amount/' + count + '/authorized');
+                example.set(text.trim());
+              }
+            })
+            .html(information.used)
+            .then(text => {
+              if(information.typeAccount != 'DEBIT') {
+                var example = database.ref(adressInformation + '/amount/' + count + '/used');
+                example.set(text.trim());
+              }
+            })
+            .html(information.money)
+            .then(text => {
+              if(information.typeAccount == 'CREDIT') {
+                var example = database.ref(adressInformation + '/amount/' + count + '/money');
+                example.set(text.trim());
+              }
+            });
+        }
+      }
+
+    });
+  });
+});
 

@@ -9,8 +9,8 @@ exports.list_review = function(req, res) {
     if (error !== null) {
       console.log('exec error: ', error);
     }
+    console.log('fin de proceso');
+    var data = { 'name': 'vical' };
+    res.json(data);
   });
-
-  var data = { 'name': 'vical' };
-  res.json(data);
 };
