@@ -9,7 +9,7 @@ exports.list_review = function(req, res) {
     if (error !== null) {
       console.log('exec error: ', error);
     }
+    var data = { 'name': 'vical' };
+    res.json(data);
   });
-  var data = { 'name': 'vical' };
-  res.json(data);
 };
