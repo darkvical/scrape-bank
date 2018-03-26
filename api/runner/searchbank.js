@@ -20,7 +20,6 @@ let user = users.orderByChild('user').equalTo(argv.user).once('child_added', fun
     let password = bank.credentials.password;
     const templateBank = templateBanks.orderByChild('code').equalTo(bank.code);
 
-
     let adressInformation = 'users/' + snapshot.key + '/banks/' + bank.position + '/detail';
 
     templateBank.once('child_added', function(snapshot) {
@@ -90,6 +89,10 @@ let user = users.orderByChild('user').equalTo(argv.user).once('child_added', fun
                 example.set(text.trim());
               }
             });
+            if(count == formInformation.length -1) {
+              pageInformation.wait(1000).close();
+              setTimeout(function(){ process.exit(); }, 17000);
+            }
         }
       }
     });
