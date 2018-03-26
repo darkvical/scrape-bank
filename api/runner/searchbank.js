@@ -8,7 +8,7 @@ const database = firebase.database();
 
 const users = database.ref('users');
 
-let user = users.orderByChild('user').equalTo(argv.user).on('child_added', function(snapshot) {
+let user = users.orderByChild('user').equalTo(argv.user).once('child_added', function(snapshot) {
 
   let user = snapshot.val();
   const banks = user.banks;
@@ -23,7 +23,7 @@ let user = users.orderByChild('user').equalTo(argv.user).on('child_added', funct
 
     let adressInformation = 'users/' + snapshot.key + '/banks/' + bank.position + '/detail';
 
-    templateBank.on('child_added', function(snapshot) {
+    templateBank.once('child_added', function(snapshot) {
 
       const template = snapshot.val();
       const urlSearch = template.url;
