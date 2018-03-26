@@ -13,9 +13,9 @@ let user = users.orderByChild('user').equalTo(argv.user).once('child_added', fun
   let user = snapshot.val();
   const banks = user.banks;
   const templateBanks = database.ref('banks');
-
-  banks.forEach(function(bank) {
-
+  
+  for(let key in banks) {
+    let bank = banks[key];
     let doc = bank.credentials.document;
     let password = bank.credentials.password;
     const templateBank = templateBanks.orderByChild('code').equalTo(bank.code);
@@ -92,8 +92,7 @@ let user = users.orderByChild('user').equalTo(argv.user).once('child_added', fun
             });
         }
       }
-
     });
-  });
+  }
 });
 
