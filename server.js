@@ -25,6 +25,7 @@ app.use(bodyParser.json());
 console.log('Declarando routing');
 var routes = require(constants.ROUTE_UBICATION);
 routes(app);
+console.log('End all routing');
 
 console.log('Creando server');
 app.listen(port);
